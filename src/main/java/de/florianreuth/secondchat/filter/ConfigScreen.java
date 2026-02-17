@@ -213,6 +213,8 @@ public final class ConfigScreen extends Screen {
 
     public class ListEntry extends ObjectSelectionList.Entry<ListEntry> {
         public static final int INNER_PADDING = 2;
+        private static final int POSITION_CONTROLS_WIDTH = 300;
+        private static final double DELETE_AREA_THRESHOLD = 0.6;
 
         private final FilterRule rule;
         private EditBox xInput;
@@ -236,8 +238,8 @@ public final class ConfigScreen extends Screen {
             int contentX = getContentX();
             int contentWidth = getContentWidth();
             
-            // If click is on the left 60% of the entry, delete it
-            if (mouseX < contentX + contentWidth * 0.6) {
+            // If click is on the left side of the entry, delete it
+            if (mouseX < contentX + contentWidth * DELETE_AREA_THRESHOLD) {
                 SecondChat.instance().remove(rule);
                 minecraft.setScreen(new ConfigScreen(parent));
                 return true;
@@ -268,7 +270,7 @@ public final class ConfigScreen extends Screen {
             guiGraphics.drawString(font, styledNarration, INNER_PADDING, INNER_PADDING + font.lineHeight + 2, -1);
 
             // Right side: Position controls
-            int rightStart = width - 300;
+            int rightStart = width - POSITION_CONTROLS_WIDTH;
             
             // Get current position
             ChatPosition currentPos = SecondChat.instance().getChatPosition(rule.chatId());
@@ -305,7 +307,9 @@ public final class ConfigScreen extends Screen {
                         int y = Integer.parseInt(yInput.getValue());
                         SecondChat.instance().setChatPosition(new ChatPosition(rule.chatId(), x, y));
                     } catch (NumberFormatException e) {
-                        // Invalid input, ignore
+                        // Invalid input - reset to current values
+                        xInput.setValue(String.valueOf(currentX));
+                        yInput.setValue(String.valueOf(currentY));
                     }
                 }).pos(rightStart + 140, INNER_PADDING - 2).size(50, 16).build();
             }
