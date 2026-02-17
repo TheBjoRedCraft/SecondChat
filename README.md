@@ -1,6 +1,6 @@
 # SecondChat
 
-Fabric mod to add multiple optional chat huds.
+Fabric mod to add unlimited optional chat huds.
 
 ## Preview
 
@@ -11,7 +11,7 @@ You can scroll in the additional chats by moving your mouse to the right side of
 
 ![Configuration](.github/images/configuration.png)
 You can define multiple rules with different filter types and chat IDs. Every message matching one of the rules will be added
-to the specified chat (1-10). The mod supports the following filter types:
+to the specified chat. The mod supports unlimited chat windows - simply assign any positive chat ID to your filter rules. The mod supports the following filter types:
 
 - EQUALS
 - EQUALS IGNORE CASE

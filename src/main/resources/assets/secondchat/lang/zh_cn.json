@@ -1,5 +1,5 @@
 ﻿{
-  "modmenu.descriptionTranslation.secondchat": "Fabric模组，用于添加多个可选的聊天界面。",
+  "modmenu.descriptionTranslation.secondchat": "Fabric模组，用于添加无限多个可选的聊天界面。",
 
   "secondchat.config.title": "SecondChat 配置",
   "secondchat.config.chatid": "聊天 #%s",
