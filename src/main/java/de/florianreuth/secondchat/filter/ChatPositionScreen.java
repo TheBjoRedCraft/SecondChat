@@ -35,7 +35,7 @@ public final class ChatPositionScreen extends Screen {
     private static final int PADDING = 3;
     private static final int LABEL_WIDTH = 80;
     private static final int INPUT_WIDTH = 60;
-    private static final int BUTTON_WIDTH = 50;
+    private static final int BUTTON_WIDTH = 60;  // Increased from 50 to 60
 
     private final Screen parent;
     private PositionList positionList;
@@ -63,9 +63,9 @@ public final class ChatPositionScreen extends Screen {
         // Add back button
         final int y = height - Button.DEFAULT_HEIGHT - PADDING - 1;
         addRenderableWidget(Button
-            .builder(Component.literal("<-"), button -> minecraft.setScreen(parent))
+            .builder(Component.literal("Back"), button -> minecraft.setScreen(parent))
             .pos(PADDING, y)
-            .size(Button.DEFAULT_HEIGHT, Button.DEFAULT_HEIGHT)
+            .size(50, Button.DEFAULT_HEIGHT)
             .build());
     }
 
@@ -73,6 +73,12 @@ public final class ChatPositionScreen extends Screen {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         guiGraphics.drawCenteredString(font, title, width / 2, PADDING + font.lineHeight, 0xFFFFFF);
+    }
+
+    @Override
+    public void onClose() {
+        // Return to parent screen when closed (e.g., by pressing ESC)
+        minecraft.setScreen(parent);
     }
 
     private final class PositionList extends ObjectSelectionList<PositionEntry> {

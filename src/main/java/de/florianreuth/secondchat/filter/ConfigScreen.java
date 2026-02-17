@@ -147,16 +147,16 @@ public final class ConfigScreen extends Screen {
         addButton.active = false;
 
         addRenderableWidget(Button
-            .builder(Component.literal("<-"), button -> minecraft.setScreen(parent))
+            .builder(Component.literal("Back"), button -> minecraft.setScreen(parent))
             .pos(PADDING, y)
-            .size(Button.DEFAULT_HEIGHT, Button.DEFAULT_HEIGHT)
+            .size(50, Button.DEFAULT_HEIGHT)
             .build());
         
         // Add position configuration button
         addRenderableWidget(Button
             .builder(Component.literal("Positions"), button -> minecraft.setScreen(new ChatPositionScreen(this)))
-            .pos(PADDING + Button.DEFAULT_HEIGHT + PADDING, y)
-            .size(70, Button.DEFAULT_HEIGHT)
+            .pos(PADDING + 50 + PADDING, y)
+            .size(80, Button.DEFAULT_HEIGHT)
             .build());
     }
 
