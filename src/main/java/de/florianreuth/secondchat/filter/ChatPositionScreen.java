@@ -77,7 +77,7 @@ public final class ChatPositionScreen extends Screen {
 
     private final class PositionList extends ObjectSelectionList<PositionEntry> {
         public PositionList(final net.minecraft.client.Minecraft minecraft, final int width, final int height, final int y0, final int y1, final int itemHeight) {
-            super(minecraft, width, height, y0, y1, itemHeight);
+            super(minecraft, width, height, y0, y1);
             
             // Add entries for all active chats
             final int maxChatId = SecondChat.instance().getMaxChatId();
@@ -94,16 +94,6 @@ public final class ChatPositionScreen extends Screen {
         @Override
         public int getRowWidth() {
             return Math.min(600, width - 40);
-        }
-
-        @Override
-        protected int getScrollbarPosition() {
-            return width / 2 + getRowWidth() / 2 + 2;
-        }
-
-        @Override
-        public int getContentWidth() {
-            return getRowWidth();
         }
     }
 
