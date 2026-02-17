@@ -108,7 +108,8 @@ public abstract class MixinGui implements IGui {
             secondChat$getChatComponent(i);
         }
         
-        return secondChat$chatComponents.subList(0, Math.min(maxChatId, secondChat$chatComponents.size()));
+        // Return a new list to avoid ConcurrentModificationException
+        return new ArrayList<>(secondChat$chatComponents.subList(0, Math.min(maxChatId, secondChat$chatComponents.size())));
     }
 
     @Override

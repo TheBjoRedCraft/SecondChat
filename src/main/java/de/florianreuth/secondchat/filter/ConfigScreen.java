@@ -35,6 +35,7 @@ import org.joml.Matrix3x2fStack;
 public final class ConfigScreen extends Screen {
     private static final int RED_TRANSPARENT = 0x80FF0000;
     private static final int PADDING = 3;
+    private static final int BUTTON_SPACING = 1;
 
     // Component widths sum to 350, with PADDING spaces between them
     private static final int TEXT_FIELD_WIDTH = 150;
@@ -98,7 +99,7 @@ public final class ConfigScreen extends Screen {
             .size(CHAT_ID_DEC_WIDTH, Button.DEFAULT_HEIGHT)
             .build());
         
-        x += CHAT_ID_DEC_WIDTH + 1;
+        x += CHAT_ID_DEC_WIDTH + BUTTON_SPACING;
         chatIdButton = addRenderableWidget(Button
             .builder(getChatIdText(chatId), button -> {
                 // Click to cycle through common values
@@ -113,7 +114,7 @@ public final class ConfigScreen extends Screen {
             .size(CHAT_ID_BUTTON_WIDTH, Button.DEFAULT_HEIGHT)
             .build());
         
-        x += CHAT_ID_BUTTON_WIDTH + 1;
+        x += CHAT_ID_BUTTON_WIDTH + BUTTON_SPACING;
         // Increment button
         addRenderableWidget(Button
             .builder(Component.literal("+"), button -> {
