@@ -36,7 +36,7 @@ public final class ConfigScreen extends Screen {
     private static final int RED_TRANSPARENT = 0x80FF0000;
     private static final int PADDING = 3;
 
-    // They sum up to 340
+    // They sum up to 320 plus padding
     private static final int TEXT_FIELD_WIDTH = 150;
     private static final int FILTER_BUTTON_WIDTH = 100;
     private static final int CHAT_ID_BUTTON_WIDTH = 50;

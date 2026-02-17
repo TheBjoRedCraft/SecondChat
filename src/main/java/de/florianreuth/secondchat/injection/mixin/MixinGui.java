@@ -95,6 +95,8 @@ public abstract class MixinGui implements IGui {
 
     @Override
     public ChatComponent secondChat$getChatComponent(int chatId) {
+        // Chat IDs are 1-indexed (1 to MAX_CHATS)
+        // Return the corresponding chat component, or fallback to first chat for invalid IDs
         if (chatId > 0 && chatId <= secondChat$chatComponents.size()) {
             return secondChat$chatComponents.get(chatId - 1);
         }
