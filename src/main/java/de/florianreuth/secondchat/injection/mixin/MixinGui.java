@@ -77,11 +77,25 @@ public abstract class MixinGui implements IGui {
         int cumulativeWidth = 0;
         for (int i = 0; i < maxChatId; i++) {
             secondChat$currentChatIndex = i;
-            final ChatComponent chatComponent = secondChat$getChatComponent(i + 1);
+            final int chatId = i + 1;
+            final ChatComponent chatComponent = secondChat$getChatComponent(chatId);
             cumulativeWidth += chatComponent.getWidth();
             
             pose.pushMatrix();
-            pose.translate(guiGraphics.guiWidth() - cumulativeWidth, 0);
+            
+            // Check if there's a custom position for this chat
+            de.florianreuth.secondchat.ChatPosition customPos = 
+                de.florianreuth.secondchat.SecondChat.instance().getChatPosition(chatId);
+            
+            if (customPos != null) {
+                // Use custom position (x is from left if positive, from right if negative)
+                float x = customPos.x() < 0 ? guiGraphics.guiWidth() + customPos.x() : customPos.x();
+                pose.translate(x, customPos.y());
+            } else {
+                // Use default position (stacked from right)
+                pose.translate(guiGraphics.guiWidth() - cumulativeWidth, 0);
+            }
+            
             this.renderChat(guiGraphics, deltaTracker);
             pose.popMatrix();
         }

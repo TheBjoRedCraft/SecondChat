@@ -26,7 +26,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
@@ -39,9 +41,11 @@ public final class SecondChat implements ClientModInitializer {
 
     private final Logger logger = LogManager.getLogger("SecondChat");
     private final Path config = FabricLoader.getInstance().getConfigDir().resolve("secondchat.json");
+    private final Path positionsConfig = FabricLoader.getInstance().getConfigDir().resolve("secondchat-positions.json");
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     private List<FilterRule> rules;
+    private Map<Integer, ChatPosition> chatPositions = new HashMap<>();
 
     public static SecondChat instance() {
         return INSTANCE;
@@ -60,6 +64,20 @@ public final class SecondChat implements ClientModInitializer {
             }
         } else {
             rules = new ArrayList<>(); // Needs to be modifiable
+        }
+        
+        // Load chat positions
+        if (Files.exists(positionsConfig)) {
+            try {
+                final ChatPosition[] positions = gson.fromJson(Files.readString(positionsConfig), ChatPosition[].class);
+                if (positions != null) {
+                    for (ChatPosition position : positions) {
+                        chatPositions.put(position.chatId(), position);
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Failed to read positions file: {}!", positionsConfig.toString(), e);
+            }
         }
     }
 
@@ -116,6 +134,34 @@ public final class SecondChat implements ClientModInitializer {
 
     public List<FilterRule> rules() {
         return rules;
+    }
+    
+    /**
+     * Gets the position for a chat, or returns null if no custom position is set.
+     */
+    public ChatPosition getChatPosition(int chatId) {
+        return chatPositions.get(chatId);
+    }
+    
+    /**
+     * Sets the position for a chat and saves it to the config.
+     */
+    public void setChatPosition(ChatPosition position) {
+        chatPositions.put(position.chatId(), position);
+        savePositions();
+    }
+    
+    /**
+     * Saves chat positions to the config file.
+     */
+    private void savePositions() {
+        try {
+            final List<ChatPosition> positionsList = new ArrayList<>(chatPositions.values());
+            Files.write(positionsConfig, gson.toJson(positionsList).getBytes(), 
+                       StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (Exception e) {
+            logger.error("Failed to save positions file: {}!", positionsConfig.toString(), e);
+        }
     }
 
 }

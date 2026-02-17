@@ -75,13 +75,20 @@ public abstract class MixinChatScreen extends Screen {
         final List<ChatComponent> chatComponents = ((IGui) minecraft.gui).secondChat$getChatComponents();
         
         // Determine which chat is focused based on mouse position
-        // Chats are rendered right-to-left, with chat 0 being rightmost
         secondChat$focusedChatIndex = -1;
-        int cumulativeWidth = 0;
+        
+        // Calculate positions for each chat (considering custom positions)
         for (int i = 0; i < chatComponents.size(); i++) {
-            cumulativeWidth += chatComponents.get(i).getWidth();
+            final int chatId = i + 1;
+            final ChatComponent chatComponent = chatComponents.get(i);
+            
+            // Get the actual position where this chat will be rendered
+            final int[] position = secondChat$getChatRenderPosition(chatId, chatComponent, guiGraphics.guiWidth());
+            final int chatX = position[0];
+            final int chatWidth = chatComponent.getWidth();
+            
             // Check if mouse is within this chat's horizontal bounds
-            if (mouseX > width - cumulativeWidth) {
+            if (mouseX >= chatX && mouseX < chatX + chatWidth) {
                 secondChat$focusedChatIndex = i;
                 break;
             }
@@ -90,26 +97,51 @@ public abstract class MixinChatScreen extends Screen {
         final Matrix3x2fStack pose = guiGraphics.pose();
         
         // Render all additional chat components
-        cumulativeWidth = 0;
         for (int i = 0; i < chatComponents.size(); i++) {
+            final int chatId = i + 1;
             final ChatComponent chatComponent = chatComponents.get(i);
-            cumulativeWidth += chatComponent.getWidth();
             
             pose.pushMatrix();
-            pose.translate(guiGraphics.guiWidth() - cumulativeWidth, 0);
+            
+            // Use the same position calculation as in MixinGui
+            final int[] position = secondChat$getChatRenderPosition(chatId, chatComponent, guiGraphics.guiWidth());
+            pose.translate(position[0], position[1]);
+            
             chatComponent.render(guiGraphics, font, minecraft.gui.getGuiTicks(), mouseX, mouseY, true, insertionClickMode());
             pose.popMatrix();
+        }
+    }
+    
+    @Unique
+    private int[] secondChat$getChatRenderPosition(int chatId, ChatComponent chatComponent, int guiWidth) {
+        de.florianreuth.secondchat.ChatPosition customPos = 
+            de.florianreuth.secondchat.SecondChat.instance().getChatPosition(chatId);
+        
+        if (customPos != null) {
+            // Use custom position
+            int x = customPos.x() < 0 ? guiWidth + customPos.x() : customPos.x();
+            return new int[]{x, customPos.y()};
+        } else {
+            // Use default position (stacked from right)
+            int cumulativeWidth = 0;
+            for (int i = 0; i < chatId; i++) {
+                cumulativeWidth += ((IGui) minecraft.gui).secondChat$getChatComponent(i + 1).getWidth();
+            }
+            return new int[]{guiWidth - cumulativeWidth, 0};
         }
     }
 
     @Unique
     private int secondChat$fixMouseX(final int mouseX, final int chatIndex) {
-        final List<ChatComponent> components = ((IGui) Minecraft.getInstance().gui).secondChat$getChatComponents();
-        int cumulativeWidth = 0;
-        for (int i = 0; i <= chatIndex; i++) {
-            cumulativeWidth += components.get(i).getWidth();
-        }
-        return mouseX - minecraft.getWindow().getGuiScaledWidth() + cumulativeWidth;
+        final int chatId = chatIndex + 1;
+        final ChatComponent chatComponent = ((IGui) Minecraft.getInstance().gui).secondChat$getChatComponent(chatId);
+        
+        // Get the actual position where this chat is rendered
+        final int[] position = secondChat$getChatRenderPosition(chatId, chatComponent, minecraft.getWindow().getGuiScaledWidth());
+        final int chatX = position[0];
+        
+        // Convert screen coordinates to chat-local coordinates
+        return mouseX - chatX;
     }
 
     @Unique
