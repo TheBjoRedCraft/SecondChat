@@ -20,21 +20,8 @@ package de.florianreuth.secondchat;
 
 /**
  * Represents the position of a chat window on the screen.
- * Coordinates are relative to the bottom-left corner for consistency with chat rendering.
+ * X coordinate: Positive values from left edge, negative from right edge
+ * Y coordinate: Direct translation value (0 = default bottom position)
  */
 public record ChatPosition(int chatId, int x, int y) {
-    
-    /**
-     * Creates a default position for a chat based on its ID.
-     * Default positions stack chats from right to left at the bottom of the screen.
-     * 
-     * @param chatId The ID of the chat
-     * @param chatWidth The width of the chat component
-     * @return A default ChatPosition
-     */
-    public static ChatPosition defaultPosition(int chatId, int chatWidth) {
-        // Default: stack from right, using cumulative width like before
-        // X is negative, meaning from the right edge
-        return new ChatPosition(chatId, -chatWidth * chatId, 0);
-    }
 }
