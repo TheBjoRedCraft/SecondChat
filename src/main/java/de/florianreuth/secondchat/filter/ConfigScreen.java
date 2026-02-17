@@ -36,7 +36,7 @@ public final class ConfigScreen extends Screen {
     private static final int RED_TRANSPARENT = 0x80FF0000;
     private static final int PADDING = 3;
 
-    // They sum up to 320 plus padding
+    // Component widths sum to 320, with PADDING spaces between them
     private static final int TEXT_FIELD_WIDTH = 150;
     private static final int FILTER_BUTTON_WIDTH = 100;
     private static final int CHAT_ID_BUTTON_WIDTH = 50;
@@ -205,7 +205,8 @@ public final class ConfigScreen extends Screen {
 
             final Component chatIdText = getChatIdText(rule.chatId());
             final Component narration = Component.literal("").append(getNarration()).append(" ").append(chatIdText);
-            guiGraphics.drawString(font, narration.copy().withStyle(ChatFormatting.GOLD), width - font.width(narration) - INNER_PADDING * 2, INNER_PADDING, -1);
+            final Component styledNarration = narration.copy().withStyle(ChatFormatting.GOLD);
+            guiGraphics.drawString(font, styledNarration, width - font.width(styledNarration) - INNER_PADDING * 2, INNER_PADDING, -1);
             pose.popMatrix();
         }
     }
