@@ -215,6 +215,14 @@ public final class ConfigScreen extends Screen {
         public static final int INNER_PADDING = 2;
         private static final int POSITION_CONTROLS_WIDTH = 300;
         private static final double DELETE_AREA_THRESHOLD = 0.6;
+        
+        // Position control layout constants
+        private static final int X_LABEL_OFFSET = 0;
+        private static final int X_INPUT_OFFSET = 15;
+        private static final int Y_LABEL_OFFSET = 70;
+        private static final int Y_INPUT_OFFSET = 85;
+        private static final int SET_BUTTON_OFFSET = 140;
+        private static final int RESET_BUTTON_OFFSET = 195;
 
         private final FilterRule rule;
         private EditBox xInput;
@@ -278,24 +286,24 @@ public final class ConfigScreen extends Screen {
             int currentY = currentPos != null ? currentPos.y() : 0;
 
             // X label and input
-            guiGraphics.drawString(font, "X:", rightStart, INNER_PADDING, ChatFormatting.AQUA.getColor());
+            guiGraphics.drawString(font, "X:", rightStart + X_LABEL_OFFSET, INNER_PADDING, ChatFormatting.AQUA.getColor());
             if (xInput == null) {
-                xInput = new EditBox(font, rightStart + 15, INNER_PADDING - 2, 50, 16, Component.literal("X"));
+                xInput = new EditBox(font, rightStart + X_INPUT_OFFSET, INNER_PADDING - 2, 50, 16, Component.literal("X"));
                 xInput.setValue(String.valueOf(currentX));
                 xInput.setMaxLength(6);
             }
-            xInput.setX(rightStart + 15);
+            xInput.setX(rightStart + X_INPUT_OFFSET);
             xInput.setY(INNER_PADDING - 2);
             xInput.render(guiGraphics, i, j, f);
 
             // Y label and input
-            guiGraphics.drawString(font, "Y:", rightStart + 70, INNER_PADDING, ChatFormatting.AQUA.getColor());
+            guiGraphics.drawString(font, "Y:", rightStart + Y_LABEL_OFFSET, INNER_PADDING, ChatFormatting.AQUA.getColor());
             if (yInput == null) {
-                yInput = new EditBox(font, rightStart + 85, INNER_PADDING - 2, 50, 16, Component.literal("Y"));
+                yInput = new EditBox(font, rightStart + Y_INPUT_OFFSET, INNER_PADDING - 2, 50, 16, Component.literal("Y"));
                 yInput.setValue(String.valueOf(currentY));
                 yInput.setMaxLength(6);
             }
-            yInput.setX(rightStart + 85);
+            yInput.setX(rightStart + Y_INPUT_OFFSET);
             yInput.setY(INNER_PADDING - 2);
             yInput.render(guiGraphics, i, j, f);
 
@@ -308,12 +316,13 @@ public final class ConfigScreen extends Screen {
                         SecondChat.instance().setChatPosition(new ChatPosition(rule.chatId(), x, y));
                     } catch (NumberFormatException e) {
                         // Invalid input - reset to current values
-                        xInput.setValue(String.valueOf(currentX));
-                        yInput.setValue(String.valueOf(currentY));
+                        ChatPosition pos = SecondChat.instance().getChatPosition(rule.chatId());
+                        xInput.setValue(String.valueOf(pos != null ? pos.x() : 0));
+                        yInput.setValue(String.valueOf(pos != null ? pos.y() : 0));
                     }
-                }).pos(rightStart + 140, INNER_PADDING - 2).size(50, 16).build();
+                }).pos(rightStart + SET_BUTTON_OFFSET, INNER_PADDING - 2).size(50, 16).build();
             }
-            setButton.setX(rightStart + 140);
+            setButton.setX(rightStart + SET_BUTTON_OFFSET);
             setButton.setY(INNER_PADDING - 2);
             setButton.render(guiGraphics, i, j, f);
 
@@ -323,9 +332,9 @@ public final class ConfigScreen extends Screen {
                     SecondChat.instance().removeChatPosition(rule.chatId());
                     xInput.setValue("0");
                     yInput.setValue("0");
-                }).pos(rightStart + 195, INNER_PADDING - 2).size(55, 16).build();
+                }).pos(rightStart + RESET_BUTTON_OFFSET, INNER_PADDING - 2).size(55, 16).build();
             }
-            resetButton.setX(rightStart + 195);
+            resetButton.setX(rightStart + RESET_BUTTON_OFFSET);
             resetButton.setY(INNER_PADDING - 2);
             resetButton.render(guiGraphics, i, j, f);
 
