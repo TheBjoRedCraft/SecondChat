@@ -58,7 +58,7 @@ public final class ConfigScreen extends Screen {
 
     private EditBox editBox;
     private Button addButton;
-    private Button chatIdButton; // Needs to be field so decrement/increment buttons can update its display text
+    private Button chatIdButton; // Needs to be a field so decrement/increment buttons can update its display text
     private FilterType filterType = FilterType.CONTAINS;
     private int chatId = 1;
 

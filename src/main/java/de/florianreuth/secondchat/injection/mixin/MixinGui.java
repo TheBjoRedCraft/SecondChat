@@ -135,7 +135,7 @@ public abstract class MixinGui implements IGui {
                 // Ensure minecraft instance is available
                 if (secondChat$minecraft == null) {
                     throw new IllegalStateException("Cannot create chat component: Minecraft instance not yet initialized. " +
-                                                  "This may indicate getChatComponent was called before init completed.");
+                                                   "This may indicate getChatComponent was called before init completed.");
                 }
                 secondChat$chatComponents.add(new ChatComponent(secondChat$minecraft));
             }
