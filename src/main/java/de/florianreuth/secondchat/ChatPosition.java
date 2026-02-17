@@ -16,20 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.florianreuth.secondchat.injection.access;
+package de.florianreuth.secondchat;
 
-import net.minecraft.client.gui.components.ChatComponent;
-import java.util.List;
-
-public interface IGui {
-
-    List<ChatComponent> secondChat$getChatComponents();
-    
-    ChatComponent secondChat$getChatComponent(int chatId);
-
-    @Deprecated
-    default ChatComponent secondChat$getChatComponent() {
-        return secondChat$getChatComponent(1);
-    }
-
+/**
+ * Represents the position of a chat window on the screen.
+ * X coordinate: Positive values from left edge, negative from right edge
+ * Y coordinate: Direct translation value (0 = default bottom position)
+ */
+public record ChatPosition(int chatId, int x, int y) {
 }

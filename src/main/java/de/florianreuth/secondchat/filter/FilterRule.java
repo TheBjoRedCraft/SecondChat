@@ -18,5 +18,10 @@
 
 package de.florianreuth.secondchat.filter;
 
-public record FilterRule(String value, FilterType type) {
+public record FilterRule(String value, FilterType type, int chatId) {
+    
+    // Constructor for backward compatibility with old configs
+    public FilterRule(String value, FilterType type) {
+        this(value, type, 1);
+    }
 }

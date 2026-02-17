@@ -38,41 +38,47 @@ public abstract class MixinChatComponent {
     @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V", at = @At("HEAD"), cancellable = true)
     public void proxyMessages(Component chatComponent, MessageSignature headerSignature, GuiMessageTag tag, CallbackInfo ci) {
         if ((Object) this == Minecraft.getInstance().gui.getChat()) {
-            final boolean cancel = SecondChat.instance().matches(chatComponent.getString());
-            if (!cancel) {
+            final int chatId = SecondChat.instance().getChatId(chatComponent.getString());
+            if (chatId == 0) {
                 return;
             }
 
             ci.cancel();
-            secondChat$getChatHud().addMessage(chatComponent, headerSignature, tag);
+            secondChat$getChatHud(chatId).addMessage(chatComponent, headerSignature, tag);
         }
     }
 
     @Inject(method = "clearMessages", at = @At("RETURN"))
     public void clearSecondChat(boolean clearHistory, CallbackInfo ci) {
         if ((Object) this == Minecraft.getInstance().gui.getChat()) {
-            secondChat$getChatHud().clearMessages(clearHistory);
+            for (ChatComponent chatComponent : ((IGui) Minecraft.getInstance().gui).secondChat$getChatComponents()) {
+                chatComponent.clearMessages(clearHistory);
+            }
         }
     }
 
     @Inject(method = "rescaleChat", at = @At("RETURN"))
     public void rescaleSecondChat(CallbackInfo ci) {
         if ((Object) this == Minecraft.getInstance().gui.getChat()) {
-            secondChat$getChatHud().rescaleChat();
+            for (ChatComponent chatComponent : ((IGui) Minecraft.getInstance().gui).secondChat$getChatComponents()) {
+                chatComponent.rescaleChat();
+            }
         }
     }
 
     @Inject(method = "resetChatScroll", at = @At("RETURN"))
     public void resetScrollSecondChat(CallbackInfo ci) {
         if ((Object) this == Minecraft.getInstance().gui.getChat()) {
-            secondChat$getChatHud().resetChatScroll();
+            for (ChatComponent chatComponent : ((IGui) Minecraft.getInstance().gui).secondChat$getChatComponents()) {
+                chatComponent.resetChatScroll();
+            }
         }
     }
 
     @Unique
-    private ChatComponent secondChat$getChatHud() {
+    private ChatComponent secondChat$getChatHud(int chatId) {
         final Gui gui = Minecraft.getInstance().gui;
-        return ((IGui) gui).secondChat$getChatComponent();
+        return ((IGui) gui).secondChat$getChatComponent(chatId);
     }
 
 }

@@ -18,6 +18,7 @@
 
 package de.florianreuth.secondchat.filter;
 
+import de.florianreuth.secondchat.ChatPosition;
 import de.florianreuth.secondchat.SecondChat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -35,17 +36,32 @@ import org.joml.Matrix3x2fStack;
 public final class ConfigScreen extends Screen {
     private static final int RED_TRANSPARENT = 0x80FF0000;
     private static final int PADDING = 3;
+    private static final int CHAT_ID_BUTTON_SPACING = 2;
 
-    // They sum up to 300
+    // Button widths
     private static final int TEXT_FIELD_WIDTH = 150;
-    private static final int FILTER_BUTTON_WIDTH = 130;
-    private static final int ADD_BUTTON_WIDTH = 20;
+    private static final int FILTER_BUTTON_WIDTH = 100;
+    private static final int CHAT_ID_BUTTON_WIDTH = 30;
+    private static final int CHAT_ID_DEC_WIDTH = 15;
+    private static final int CHAT_ID_INC_WIDTH = 15;
+    private static final int ADD_BUTTON_WIDTH = 30;
+    
+    // Total width calculation:
+    // Buttons: 150 + 100 + 15 + 30 + 15 + 30 = 340
+    // Spacing: PADDING between (editBox-filter), (filter-dec), (inc-add) = 3*PADDING
+    //          CHAT_ID_BUTTON_SPACING between (dec-chatId), (chatId-inc) = 2*CHAT_ID_BUTTON_SPACING
+    private static final int TOTAL_CONTROL_WIDTH = TEXT_FIELD_WIDTH + FILTER_BUTTON_WIDTH + 
+                                                     CHAT_ID_DEC_WIDTH + CHAT_ID_BUTTON_WIDTH + 
+                                                     CHAT_ID_INC_WIDTH + ADD_BUTTON_WIDTH +
+                                                     3 * PADDING + 2 * CHAT_ID_BUTTON_SPACING;
 
     private final Screen parent;
 
     private EditBox editBox;
     private Button addButton;
+    private Button chatIdButton; // Needs to be a field so decrement/increment buttons can update its display text
     private FilterType filterType = FilterType.CONTAINS;
+    private int chatId = 1;
 
     private FilterRule alreadyAdded;
 
@@ -63,11 +79,12 @@ public final class ConfigScreen extends Screen {
             height,
             PADDING + PADDING + (font.lineHeight + 2) * PADDING /* title is 2 */,
             30,
-            font.lineHeight + ListEntry.INNER_PADDING * 4
+            font.lineHeight + ListEntry.INNER_PADDING * 4 + 20  // Increased height for position controls
         ));
 
         final int y = height - Button.DEFAULT_HEIGHT - PADDING - 1;
-        int x = width / 2 - TEXT_FIELD_WIDTH - PADDING - PADDING;
+        // Center all controls horizontally
+        int x = width / 2 - TOTAL_CONTROL_WIDTH / 2;
         editBox = addRenderableWidget(new EditBox(this.font, x, y, TEXT_FIELD_WIDTH, Button.DEFAULT_HEIGHT, Component.empty()));
 
         x += TEXT_FIELD_WIDTH + PADDING;
@@ -81,9 +98,48 @@ public final class ConfigScreen extends Screen {
             .build());
 
         x += FILTER_BUTTON_WIDTH + PADDING;
-        addButton = addRenderableWidget(Button
+        // Decrement button
+        addRenderableWidget(Button
+            .builder(Component.literal("-"), button -> {
+                if (chatId > 1) {
+                    chatId--;
+                    chatIdButton.setMessage(getChatIdText(chatId));
+                }
+            })
+            .pos(x, y)
+            .size(CHAT_ID_DEC_WIDTH, Button.DEFAULT_HEIGHT)
+            .build());
+        
+        x += CHAT_ID_DEC_WIDTH + CHAT_ID_BUTTON_SPACING;
+        chatIdButton = addRenderableWidget(Button
+            .builder(getChatIdText(chatId), button -> {
+                // Click to cycle through common values
+                if (chatId < 10) {
+                    chatId++;
+                } else {
+                    chatId = 1;
+                }
+                button.setMessage(getChatIdText(chatId));
+            })
+            .pos(x, y)
+            .size(CHAT_ID_BUTTON_WIDTH, Button.DEFAULT_HEIGHT)
+            .build());
+        
+        x += CHAT_ID_BUTTON_WIDTH + CHAT_ID_BUTTON_SPACING;
+        // Increment button
+        addRenderableWidget(Button
             .builder(Component.literal("+"), button -> {
-                SecondChat.instance().add(new FilterRule(editBox.getValue(), filterType));
+                chatId++;
+                chatIdButton.setMessage(getChatIdText(chatId));
+            })
+            .pos(x, y)
+            .size(CHAT_ID_INC_WIDTH, Button.DEFAULT_HEIGHT)
+            .build());
+
+        x += CHAT_ID_INC_WIDTH + PADDING;
+        addButton = addRenderableWidget(Button
+            .builder(Component.translatable("secondchat.config.add"), button -> {
+                SecondChat.instance().add(new FilterRule(editBox.getValue(), filterType, chatId));
                 minecraft.setScreen(new ConfigScreen(parent));
             })
             .pos(x, y)
@@ -92,14 +148,18 @@ public final class ConfigScreen extends Screen {
         addButton.active = false;
 
         addRenderableWidget(Button
-            .builder(Component.literal("<-"), button -> minecraft.setScreen(parent))
+            .builder(Component.literal("Back"), button -> minecraft.setScreen(parent))
             .pos(PADDING, y)
-            .size(Button.DEFAULT_HEIGHT, Button.DEFAULT_HEIGHT)
+            .size(50, Button.DEFAULT_HEIGHT)
             .build());
     }
 
     private Component getFilterTypeText(final FilterType filterType) {
         return Component.translatable("secondchat.config.filter." + filterType.name().toLowerCase()).withStyle(ChatFormatting.GOLD);
+    }
+
+    private Component getChatIdText(final int chatId) {
+        return Component.translatable("secondchat.config.chatid", chatId).withStyle(ChatFormatting.AQUA);
     }
 
     @Override
@@ -115,7 +175,7 @@ public final class ConfigScreen extends Screen {
         }
 
         SecondChat.instance().rules().stream()
-            .filter(rule -> rule.value().equals(editBox.getValue()) && rule.type() == filterType)
+            .filter(rule -> rule.value().equals(editBox.getValue()) && rule.type() == filterType && rule.chatId() == chatId)
             .findAny()
             .ifPresentOrElse(filterRule -> this.alreadyAdded = filterRule, () -> this.alreadyAdded = null);
         addButton.active = alreadyAdded == null;
@@ -153,8 +213,22 @@ public final class ConfigScreen extends Screen {
 
     public class ListEntry extends ObjectSelectionList.Entry<ListEntry> {
         public static final int INNER_PADDING = 2;
+        private static final int POSITION_CONTROLS_WIDTH = 300;
+        private static final double DELETE_AREA_THRESHOLD = 0.6;
+        
+        // Position control layout constants
+        private static final int X_LABEL_OFFSET = 0;
+        private static final int X_INPUT_OFFSET = 15;
+        private static final int Y_LABEL_OFFSET = 70;
+        private static final int Y_INPUT_OFFSET = 85;
+        private static final int SET_BUTTON_OFFSET = 140;
+        private static final int RESET_BUTTON_OFFSET = 195;
 
         private final FilterRule rule;
+        private EditBox xInput;
+        private EditBox yInput;
+        private Button setButton;
+        private Button resetButton;
 
         public ListEntry(FilterRule rule) {
             this.rule = rule;
@@ -167,8 +241,18 @@ public final class ConfigScreen extends Screen {
 
         @Override
         public boolean mouseClicked(final MouseButtonEvent mouseButtonEvent, final boolean bl) {
-            SecondChat.instance().remove(rule);
-            minecraft.setScreen(new ConfigScreen(parent));
+            // Check if click is on the delete area (left side) vs position controls (right side)
+            int mouseX = mouseButtonEvent.mouseX();
+            int contentX = getContentX();
+            int contentWidth = getContentWidth();
+            
+            // If click is on the left side of the entry, delete it
+            if (mouseX < contentX + contentWidth * DELETE_AREA_THRESHOLD) {
+                SecondChat.instance().remove(rule);
+                minecraft.setScreen(new ConfigScreen(parent));
+                return true;
+            }
+            
             return super.mouseClicked(mouseButtonEvent, bl);
         }
 
@@ -184,11 +268,76 @@ public final class ConfigScreen extends Screen {
             pose.translate(getContentX(), getContentY());
             guiGraphics.fill(0, 0, width - INNER_PADDING * 2, height, color);
 
+            // Left side: Filter value and type
             final MutableComponent base = Component.literal(rule.value());
             guiGraphics.drawString(font, bl ? base.withStyle(ChatFormatting.ITALIC, ChatFormatting.RED) : base, INNER_PADDING, INNER_PADDING, -1);
 
-            final Component narration = Component.literal("").append(getNarration()).withStyle(ChatFormatting.GOLD);
-            guiGraphics.drawString(font, narration, width - font.width(narration) - INNER_PADDING * 2, INNER_PADDING, -1);
+            final Component chatIdText = getChatIdText(rule.chatId());
+            final Component narration = Component.literal("").append(getNarration()).append(" ").append(chatIdText);
+            final Component styledNarration = narration.copy().withStyle(ChatFormatting.GOLD);
+            guiGraphics.drawString(font, styledNarration, INNER_PADDING, INNER_PADDING + font.lineHeight + 2, -1);
+
+            // Right side: Position controls
+            int rightStart = width - POSITION_CONTROLS_WIDTH;
+            
+            // Get current position
+            ChatPosition currentPos = SecondChat.instance().getChatPosition(rule.chatId());
+            int currentX = currentPos != null ? currentPos.x() : 0;
+            int currentY = currentPos != null ? currentPos.y() : 0;
+
+            // X label and input
+            guiGraphics.drawString(font, "X:", rightStart + X_LABEL_OFFSET, INNER_PADDING, ChatFormatting.AQUA.getColor());
+            if (xInput == null) {
+                xInput = new EditBox(font, rightStart + X_INPUT_OFFSET, INNER_PADDING - 2, 50, 16, Component.literal("X"));
+                xInput.setValue(String.valueOf(currentX));
+                xInput.setMaxLength(6);
+            }
+            xInput.setX(rightStart + X_INPUT_OFFSET);
+            xInput.setY(INNER_PADDING - 2);
+            xInput.render(guiGraphics, i, j, f);
+
+            // Y label and input
+            guiGraphics.drawString(font, "Y:", rightStart + Y_LABEL_OFFSET, INNER_PADDING, ChatFormatting.AQUA.getColor());
+            if (yInput == null) {
+                yInput = new EditBox(font, rightStart + Y_INPUT_OFFSET, INNER_PADDING - 2, 50, 16, Component.literal("Y"));
+                yInput.setValue(String.valueOf(currentY));
+                yInput.setMaxLength(6);
+            }
+            yInput.setX(rightStart + Y_INPUT_OFFSET);
+            yInput.setY(INNER_PADDING - 2);
+            yInput.render(guiGraphics, i, j, f);
+
+            // Set button
+            if (setButton == null) {
+                setButton = Button.builder(Component.literal("Set"), button -> {
+                    try {
+                        int x = Integer.parseInt(xInput.getValue());
+                        int y = Integer.parseInt(yInput.getValue());
+                        SecondChat.instance().setChatPosition(new ChatPosition(rule.chatId(), x, y));
+                    } catch (NumberFormatException e) {
+                        // Invalid input - reset to current values
+                        ChatPosition pos = SecondChat.instance().getChatPosition(rule.chatId());
+                        xInput.setValue(String.valueOf(pos != null ? pos.x() : 0));
+                        yInput.setValue(String.valueOf(pos != null ? pos.y() : 0));
+                    }
+                }).pos(rightStart + SET_BUTTON_OFFSET, INNER_PADDING - 2).size(50, 16).build();
+            }
+            setButton.setX(rightStart + SET_BUTTON_OFFSET);
+            setButton.setY(INNER_PADDING - 2);
+            setButton.render(guiGraphics, i, j, f);
+
+            // Reset button
+            if (resetButton == null) {
+                resetButton = Button.builder(Component.literal("Reset"), button -> {
+                    SecondChat.instance().removeChatPosition(rule.chatId());
+                    xInput.setValue("0");
+                    yInput.setValue("0");
+                }).pos(rightStart + RESET_BUTTON_OFFSET, INNER_PADDING - 2).size(55, 16).build();
+            }
+            resetButton.setX(rightStart + RESET_BUTTON_OFFSET);
+            resetButton.setY(INNER_PADDING - 2);
+            resetButton.render(guiGraphics, i, j, f);
+
             pose.popMatrix();
         }
     }
