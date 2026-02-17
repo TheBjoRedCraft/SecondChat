@@ -74,6 +74,12 @@ public abstract class MixinChatScreen extends Screen {
     public void decideFocusedChat(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         final List<ChatComponent> chatComponents = ((IGui) minecraft.gui).secondChat$getChatComponents();
         
+        // Pre-calculate cumulative widths for default positions (optimization)
+        final int[] cumulativeWidths = new int[chatComponents.size() + 1];
+        for (int i = 0; i < chatComponents.size(); i++) {
+            cumulativeWidths[i + 1] = cumulativeWidths[i] + chatComponents.get(i).getWidth();
+        }
+        
         // Determine which chat is focused based on mouse position
         secondChat$focusedChatIndex = -1;
         
@@ -83,7 +89,7 @@ public abstract class MixinChatScreen extends Screen {
             final ChatComponent chatComponent = chatComponents.get(i);
             
             // Get the actual position where this chat will be rendered
-            final int[] position = secondChat$getChatRenderPosition(chatId, chatComponent, guiGraphics.guiWidth());
+            final int[] position = secondChat$getChatRenderPosition(chatId, guiGraphics.guiWidth(), cumulativeWidths[chatId]);
             final int chatX = position[0];
             final int chatWidth = chatComponent.getWidth();
             
@@ -103,8 +109,8 @@ public abstract class MixinChatScreen extends Screen {
             
             pose.pushMatrix();
             
-            // Use the same position calculation as in MixinGui
-            final int[] position = secondChat$getChatRenderPosition(chatId, chatComponent, guiGraphics.guiWidth());
+            // Use the same position calculation
+            final int[] position = secondChat$getChatRenderPosition(chatId, guiGraphics.guiWidth(), cumulativeWidths[chatId]);
             pose.translate(position[0], position[1]);
             
             chatComponent.render(guiGraphics, font, minecraft.gui.getGuiTicks(), mouseX, mouseY, true, insertionClickMode());
@@ -113,7 +119,7 @@ public abstract class MixinChatScreen extends Screen {
     }
     
     @Unique
-    private int[] secondChat$getChatRenderPosition(int chatId, ChatComponent chatComponent, int guiWidth) {
+    private int[] secondChat$getChatRenderPosition(int chatId, int guiWidth, int cumulativeWidth) {
         de.florianreuth.secondchat.ChatPosition customPos = 
             de.florianreuth.secondchat.SecondChat.instance().getChatPosition(chatId);
         
@@ -122,11 +128,7 @@ public abstract class MixinChatScreen extends Screen {
             int x = customPos.x() < 0 ? guiWidth + customPos.x() : customPos.x();
             return new int[]{x, customPos.y()};
         } else {
-            // Use default position (stacked from right)
-            int cumulativeWidth = 0;
-            for (int i = 0; i < chatId; i++) {
-                cumulativeWidth += ((IGui) minecraft.gui).secondChat$getChatComponent(i + 1).getWidth();
-            }
+            // Use default position (stacked from right) using pre-calculated cumulative width
             return new int[]{guiWidth - cumulativeWidth, 0};
         }
     }
@@ -134,10 +136,16 @@ public abstract class MixinChatScreen extends Screen {
     @Unique
     private int secondChat$fixMouseX(final int mouseX, final int chatIndex) {
         final int chatId = chatIndex + 1;
-        final ChatComponent chatComponent = ((IGui) Minecraft.getInstance().gui).secondChat$getChatComponent(chatId);
+        
+        // Calculate cumulative width for this chat
+        final List<ChatComponent> components = ((IGui) Minecraft.getInstance().gui).secondChat$getChatComponents();
+        int cumulativeWidth = 0;
+        for (int i = 0; i <= chatIndex && i < components.size(); i++) {
+            cumulativeWidth += components.get(i).getWidth();
+        }
         
         // Get the actual position where this chat is rendered
-        final int[] position = secondChat$getChatRenderPosition(chatId, chatComponent, minecraft.getWindow().getGuiScaledWidth());
+        final int[] position = secondChat$getChatRenderPosition(chatId, minecraft.getWindow().getGuiScaledWidth(), cumulativeWidth);
         final int chatX = position[0];
         
         // Convert screen coordinates to chat-local coordinates

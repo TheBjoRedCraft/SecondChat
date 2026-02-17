@@ -159,6 +159,14 @@ public final class SecondChat implements ClientModInitializer {
     }
     
     /**
+     * Removes custom position for a chat, reverting to default stacking behavior.
+     */
+    public void removeChatPosition(int chatId) {
+        chatPositions.remove(chatId);
+        savePositions();
+    }
+    
+    /**
      * Saves chat positions to the config file.
      */
     private void savePositions() {

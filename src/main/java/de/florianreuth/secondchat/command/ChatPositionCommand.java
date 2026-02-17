@@ -73,9 +73,9 @@ public class ChatPositionCommand {
     private static int resetPosition(CommandContext<FabricClientCommandSource> context) {
         int chatId = IntegerArgumentType.getInteger(context, "chatId");
         
-        SecondChat.instance().setChatPosition(new ChatPosition(chatId, 0, 0));
+        SecondChat.instance().removeChatPosition(chatId);
         context.getSource().sendFeedback(Component.literal(
-            String.format("Reset position for Chat #%d to default", chatId)
+            String.format("Reset position for Chat #%d to default (stacked)", chatId)
         ));
         
         return 1;
