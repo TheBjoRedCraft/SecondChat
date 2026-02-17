@@ -58,7 +58,7 @@ public final class ConfigScreen extends Screen {
 
     private EditBox editBox;
     private Button addButton;
-    private Button chatIdButton;
+    private Button chatIdButton; // Field needed for decrement/increment buttons to update the display
     private FilterType filterType = FilterType.CONTAINS;
     private int chatId = 1;
 
@@ -137,7 +137,7 @@ public final class ConfigScreen extends Screen {
 
         x += CHAT_ID_INC_WIDTH + PADDING;
         addButton = addRenderableWidget(Button
-            .builder(Component.literal("✓"), button -> {
+            .builder(Component.translatable("secondchat.config.add"), button -> {
                 SecondChat.instance().add(new FilterRule(editBox.getValue(), filterType, chatId));
                 minecraft.setScreen(new ConfigScreen(parent));
             })
