@@ -107,6 +107,13 @@ public final class SecondChat implements ClientModInitializer {
             .orElse(0);
     }
 
+    public int getMaxChatId() {
+        return rules.stream()
+            .mapToInt(FilterRule::chatId)
+            .max()
+            .orElse(0);
+    }
+
     public List<FilterRule> rules() {
         return rules;
     }

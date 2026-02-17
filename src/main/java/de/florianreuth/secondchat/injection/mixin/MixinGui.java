@@ -40,8 +40,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Gui.class)
 public abstract class MixinGui implements IGui {
 
-    private static final int MAX_CHATS = 10;
-
     @Shadow
     @Final
     private ChatComponent chat;
@@ -52,24 +50,31 @@ public abstract class MixinGui implements IGui {
     @Unique
     private int secondChat$currentChatIndex = -1;
 
+    @Unique
+    private Minecraft secondChat$minecraft;
+
     @Shadow
     protected abstract void renderChat(final GuiGraphics guiGraphics, final DeltaTracker deltaTracker);
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void init(Minecraft minecraft, CallbackInfo ci) {
-        for (int i = 0; i < MAX_CHATS; i++) {
-            secondChat$chatComponents.add(new ChatComponent(minecraft));
-        }
+        secondChat$minecraft = minecraft;
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderChat(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V"))
     private void renderSecondChat(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         final Matrix3x2fStack pose = guiGraphics.pose();
         
+        // Only render chats that are actually in use (based on filter rules)
+        final int maxChatId = de.florianreuth.secondchat.SecondChat.instance().getMaxChatId();
+        if (maxChatId < 1) {
+            return; // No additional chats to render
+        }
+        
         int cumulativeWidth = 0;
-        for (int i = 0; i < secondChat$chatComponents.size(); i++) {
+        for (int i = 0; i < maxChatId; i++) {
             secondChat$currentChatIndex = i;
-            final ChatComponent chatComponent = secondChat$chatComponents.get(i);
+            final ChatComponent chatComponent = secondChat$getChatComponent(i + 1);
             cumulativeWidth += chatComponent.getWidth();
             
             pose.pushMatrix();
@@ -92,17 +97,36 @@ public abstract class MixinGui implements IGui {
 
     @Override
     public List<ChatComponent> secondChat$getChatComponents() {
-        return secondChat$chatComponents;
+        // Return only the chat components that have been created (up to maxChatId)
+        final int maxChatId = de.florianreuth.secondchat.SecondChat.instance().getMaxChatId();
+        if (maxChatId < 1) {
+            return new ArrayList<>();
+        }
+        
+        // Ensure all chats up to maxChatId are created
+        for (int i = 1; i <= maxChatId; i++) {
+            secondChat$getChatComponent(i);
+        }
+        
+        return secondChat$chatComponents.subList(0, Math.min(maxChatId, secondChat$chatComponents.size()));
     }
 
     @Override
     public ChatComponent secondChat$getChatComponent(int chatId) {
-        // Chat IDs are 1-indexed (1 to MAX_CHATS)
-        // Return the corresponding chat component, or fallback to first chat for invalid IDs
-        if (chatId > 0 && chatId <= secondChat$chatComponents.size()) {
-            return secondChat$chatComponents.get(chatId - 1);
+        // Chat IDs are 1-indexed
+        // Dynamically create chat components as needed
+        if (chatId < 1) {
+            chatId = 1; // Fallback to chat 1 for invalid IDs
         }
-        return secondChat$chatComponents.get(0);
+        
+        int index = chatId - 1;
+        
+        // Expand the list if necessary
+        while (secondChat$chatComponents.size() <= index) {
+            secondChat$chatComponents.add(new ChatComponent(secondChat$minecraft));
+        }
+        
+        return secondChat$chatComponents.get(index);
     }
 
 }
