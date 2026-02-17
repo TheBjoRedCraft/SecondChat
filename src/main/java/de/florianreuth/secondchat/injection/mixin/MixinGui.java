@@ -106,14 +106,17 @@ public abstract class MixinGui implements IGui {
             return new ArrayList<>();
         }
         
-        // Ensure all chats up to maxChatId are created
-        for (int i = 1; i <= maxChatId; i++) {
-            secondChat$getChatComponent(i);
+        // Synchronize to prevent concurrent modification during list creation and copying
+        synchronized (secondChat$chatComponentsLock) {
+            // Ensure all chats up to maxChatId are created
+            for (int i = 1; i <= maxChatId; i++) {
+                secondChat$getChatComponent(i);
+            }
+            
+            // Return a new list to avoid ConcurrentModificationException
+            // After the loop above, we're guaranteed to have at least maxChatId elements
+            return new ArrayList<>(secondChat$chatComponents.subList(0, maxChatId));
         }
-        
-        // Return a new list to avoid ConcurrentModificationException
-        // After the loop above, we're guaranteed to have at least maxChatId elements
-        return new ArrayList<>(secondChat$chatComponents.subList(0, maxChatId));
     }
 
     @Override
