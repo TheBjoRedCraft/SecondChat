@@ -1,5 +1,5 @@
 {
-  "modmenu.descriptionTranslation.secondchat": "Fabric mod to add another optional chat hud.",
+  "modmenu.descriptionTranslation.secondchat": "Fabric mod to add multiple optional chat huds.",
 
   "secondchat.config.title": "SecondChat Configuration",
   "secondchat.config.chatid": "Chat #%s",

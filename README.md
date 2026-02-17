@@ -1,17 +1,17 @@
 # SecondChat
 
-Fabric mod to add another optional chat hud.
+Fabric mod to add multiple optional chat huds.
 
 ## Preview
 
 ![Preview](.github/images/preview.png)
-You can scroll in the right/second chat by moving your mouse to the right middle of the screen.
+You can scroll in the additional chats by moving your mouse to the right side of the screen. Multiple chats can be displayed side-by-side.
 
 ## Configuration
 
 ![Configuration](.github/images/configuration.png)
-You can define multiple rules with different filter types, every message matching one of the rules will be added
-to the right/second chat, the mod supports the following filter types:
+You can define multiple rules with different filter types and chat IDs. Every message matching one of the rules will be added
+to the specified chat (1-10). The mod supports the following filter types:
 
 - EQUALS
 - EQUALS IGNORE CASE
