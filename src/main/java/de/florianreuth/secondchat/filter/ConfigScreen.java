@@ -151,6 +151,13 @@ public final class ConfigScreen extends Screen {
             .pos(PADDING, y)
             .size(Button.DEFAULT_HEIGHT, Button.DEFAULT_HEIGHT)
             .build());
+        
+        // Add position configuration button
+        addRenderableWidget(Button
+            .builder(Component.literal("Positions"), button -> minecraft.setScreen(new ChatPositionScreen(this)))
+            .pos(PADDING + Button.DEFAULT_HEIGHT + PADDING, y)
+            .size(70, Button.DEFAULT_HEIGHT)
+            .build());
     }
 
     private Component getFilterTypeText(final FilterType filterType) {

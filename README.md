@@ -22,23 +22,27 @@ to the specified chat. The mod supports unlimited chat windows - simply assign a
 
 ## Chat Positioning
 
-Chats can be positioned anywhere on the screen using x/y coordinates. By default, chats are stacked from right to left.
+Chats can be positioned anywhere on the screen using x/y coordinates through the configuration GUI.
 
-### Position Commands
+### Accessing Position Settings
 
-- `/chatpos set <chatId> <x> <y>` - Set the position of a chat window
-  - `x`: Horizontal position (negative values = from right edge)
-  - `y`: Vertical position from bottom
-- `/chatpos reset <chatId>` - Reset a chat to default position
-- `/chatpos list` - Show all chat positions
+1. Open the SecondChat configuration (via Mod Menu)
+2. Click the "Positions" button at the bottom
+3. Set X and Y coordinates for each chat
+4. Click "Set" to apply or "Reset" to restore default stacking
+
+### Coordinate System
+
+- **X coordinate**: Horizontal position
+  - Positive values = distance from left edge
+  - Negative values = distance from right edge (e.g., -300 = 300 pixels from right)
+- **Y coordinate**: Vertical offset from default position
 
 ### Examples
 
-```
-/chatpos set 1 10 10        # Position chat #1 at x=10, y=10 from bottom-left
-/chatpos set 2 -300 50      # Position chat #2 300 pixels from right edge, 50 up
-/chatpos reset 1            # Reset chat #1 to default stacked position
-```
+- X=10, Y=10: Position chat near bottom-left corner
+- X=-300, Y=50: Position chat 300 pixels from right edge, 50 pixels up
+- X=500, Y=100: Position chat 500 pixels from left, 100 pixels up
 
 Positions are saved in `config/secondchat-positions.json` and persist across restarts.
 

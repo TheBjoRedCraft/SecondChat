@@ -8,7 +8,7 @@ plugins {
 setupProject()
 setupFabricRemap()
 setupPublishing()
-includeFabricApiModules("fabric-api-base", "fabric-resource-loader-v0", "fabric-screen-api-v1", "fabric-key-binding-api-v1", "fabric-lifecycle-events-v1", "fabric-command-api-v2")
+includeFabricApiModules("fabric-api-base", "fabric-resource-loader-v0", "fabric-screen-api-v1", "fabric-key-binding-api-v1", "fabric-lifecycle-events-v1")
 
 repositories {
     maven("https://maven.terraformersmc.com/releases")

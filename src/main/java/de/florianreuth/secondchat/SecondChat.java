@@ -20,7 +20,6 @@ package de.florianreuth.secondchat;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import de.florianreuth.secondchat.command.ChatPositionCommand;
 import de.florianreuth.secondchat.filter.FilterRule;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -81,11 +79,6 @@ public final class SecondChat implements ClientModInitializer {
                 logger.error("Failed to read positions file: {}!", positionsConfig.toString(), e);
             }
         }
-        
-        // Register commands
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            ChatPositionCommand.register(dispatcher);
-        });
     }
 
     public void save() {
