@@ -3,7 +3,7 @@
 
   "secondchat.config.title": "SecondChat Configuration",
   "secondchat.config.chatid": "Chat #%s",
-  "secondchat.config.add": "+",
+  "secondchat.config.add": "Add",
 
   "secondchat.config.filter.equals": "Equals",
   "secondchat.config.filter.equals_ignore_case": "Equals (ignore case)",

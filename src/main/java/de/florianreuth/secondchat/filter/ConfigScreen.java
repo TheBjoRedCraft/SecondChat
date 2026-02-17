@@ -43,10 +43,10 @@ public final class ConfigScreen extends Screen {
     private static final int CHAT_ID_BUTTON_WIDTH = 30;
     private static final int CHAT_ID_DEC_WIDTH = 15;
     private static final int CHAT_ID_INC_WIDTH = 15;
-    private static final int ADD_BUTTON_WIDTH = 20;
+    private static final int ADD_BUTTON_WIDTH = 30;
     
     // Total width calculation:
-    // Buttons: 150 + 100 + 15 + 30 + 15 + 20 = 330
+    // Buttons: 150 + 100 + 15 + 30 + 15 + 30 = 340
     // Spacing: PADDING between (editBox-filter), (filter-dec), (inc-add) = 3*PADDING
     //          CHAT_ID_BUTTON_SPACING between (dec-chatId), (chatId-inc) = 2*CHAT_ID_BUTTON_SPACING
     private static final int TOTAL_CONTROL_WIDTH = TEXT_FIELD_WIDTH + FILTER_BUTTON_WIDTH + 
@@ -58,7 +58,7 @@ public final class ConfigScreen extends Screen {
 
     private EditBox editBox;
     private Button addButton;
-    private Button chatIdButton; // Field needed to allow decrement/increment/click handlers to update the chat ID display
+    private Button chatIdButton; // Needs to be field so decrement/increment buttons can update its display text
     private FilterType filterType = FilterType.CONTAINS;
     private int chatId = 1;
 
