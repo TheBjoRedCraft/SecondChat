@@ -36,9 +36,10 @@ public final class ConfigScreen extends Screen {
     private static final int RED_TRANSPARENT = 0x80FF0000;
     private static final int PADDING = 3;
 
-    // They sum up to 300
+    // They sum up to 340
     private static final int TEXT_FIELD_WIDTH = 150;
-    private static final int FILTER_BUTTON_WIDTH = 130;
+    private static final int FILTER_BUTTON_WIDTH = 100;
+    private static final int CHAT_ID_BUTTON_WIDTH = 50;
     private static final int ADD_BUTTON_WIDTH = 20;
 
     private final Screen parent;
@@ -46,6 +47,7 @@ public final class ConfigScreen extends Screen {
     private EditBox editBox;
     private Button addButton;
     private FilterType filterType = FilterType.CONTAINS;
+    private int chatId = 1;
 
     private FilterRule alreadyAdded;
 
@@ -67,7 +69,7 @@ public final class ConfigScreen extends Screen {
         ));
 
         final int y = height - Button.DEFAULT_HEIGHT - PADDING - 1;
-        int x = width / 2 - TEXT_FIELD_WIDTH - PADDING - PADDING;
+        int x = width / 2 - TEXT_FIELD_WIDTH - PADDING - PADDING - PADDING;
         editBox = addRenderableWidget(new EditBox(this.font, x, y, TEXT_FIELD_WIDTH, Button.DEFAULT_HEIGHT, Component.empty()));
 
         x += TEXT_FIELD_WIDTH + PADDING;
@@ -81,9 +83,19 @@ public final class ConfigScreen extends Screen {
             .build());
 
         x += FILTER_BUTTON_WIDTH + PADDING;
+        addRenderableWidget(Button
+            .builder(getChatIdText(chatId), button -> {
+                chatId = (chatId % 10) + 1;
+                button.setMessage(getChatIdText(chatId));
+            })
+            .pos(x, y)
+            .size(CHAT_ID_BUTTON_WIDTH, Button.DEFAULT_HEIGHT)
+            .build());
+
+        x += CHAT_ID_BUTTON_WIDTH + PADDING;
         addButton = addRenderableWidget(Button
             .builder(Component.literal("+"), button -> {
-                SecondChat.instance().add(new FilterRule(editBox.getValue(), filterType));
+                SecondChat.instance().add(new FilterRule(editBox.getValue(), filterType, chatId));
                 minecraft.setScreen(new ConfigScreen(parent));
             })
             .pos(x, y)
@@ -102,6 +114,10 @@ public final class ConfigScreen extends Screen {
         return Component.translatable("secondchat.config.filter." + filterType.name().toLowerCase()).withStyle(ChatFormatting.GOLD);
     }
 
+    private Component getChatIdText(final int chatId) {
+        return Component.translatable("secondchat.config.chatid", chatId).withStyle(ChatFormatting.AQUA);
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -115,7 +131,7 @@ public final class ConfigScreen extends Screen {
         }
 
         SecondChat.instance().rules().stream()
-            .filter(rule -> rule.value().equals(editBox.getValue()) && rule.type() == filterType)
+            .filter(rule -> rule.value().equals(editBox.getValue()) && rule.type() == filterType && rule.chatId() == chatId)
             .findAny()
             .ifPresentOrElse(filterRule -> this.alreadyAdded = filterRule, () -> this.alreadyAdded = null);
         addButton.active = alreadyAdded == null;
@@ -187,8 +203,9 @@ public final class ConfigScreen extends Screen {
             final MutableComponent base = Component.literal(rule.value());
             guiGraphics.drawString(font, bl ? base.withStyle(ChatFormatting.ITALIC, ChatFormatting.RED) : base, INNER_PADDING, INNER_PADDING, -1);
 
-            final Component narration = Component.literal("").append(getNarration()).withStyle(ChatFormatting.GOLD);
-            guiGraphics.drawString(font, narration, width - font.width(narration) - INNER_PADDING * 2, INNER_PADDING, -1);
+            final Component chatIdText = getChatIdText(rule.chatId());
+            final Component narration = Component.literal("").append(getNarration()).append(" ").append(chatIdText);
+            guiGraphics.drawString(font, narration.copy().withStyle(ChatFormatting.GOLD), width - font.width(narration) - INNER_PADDING * 2, INNER_PADDING, -1);
             pose.popMatrix();
         }
     }

@@ -19,9 +19,17 @@
 package de.florianreuth.secondchat.injection.access;
 
 import net.minecraft.client.gui.components.ChatComponent;
+import java.util.List;
 
 public interface IGui {
 
-    ChatComponent secondChat$getChatComponent();
+    List<ChatComponent> secondChat$getChatComponents();
+    
+    ChatComponent secondChat$getChatComponent(int chatId);
+
+    @Deprecated
+    default ChatComponent secondChat$getChatComponent() {
+        return secondChat$getChatComponent(1);
+    }
 
 }

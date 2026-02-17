@@ -2,6 +2,7 @@
   "modmenu.descriptionTranslation.secondchat": "Fabric mod to add another optional chat hud.",
 
   "secondchat.config.title": "SecondChat Configuration",
+  "secondchat.config.chatid": "Chat #%s",
 
   "secondchat.config.filter.equals": "Equals",
   "secondchat.config.filter.equals_ignore_case": "Equals (ignore case)",

@@ -92,6 +92,21 @@ public final class SecondChat implements ClientModInitializer {
         });
     }
 
+    public int getChatId(final String input) {
+        return rules.stream()
+            .filter(rule -> switch (rule.type()) {
+                case EQUALS -> input.equals(rule.value());
+                case EQUALS_IGNORE_CASE -> input.equalsIgnoreCase(rule.value());
+                case STARTS_WITH -> input.startsWith(rule.value());
+                case ENDS_WITH -> input.endsWith(rule.value());
+                case CONTAINS -> input.contains(rule.value());
+                case REGEX -> input.matches(rule.value());
+            })
+            .findFirst()
+            .map(FilterRule::chatId)
+            .orElse(0);
+    }
+
     public List<FilterRule> rules() {
         return rules;
     }

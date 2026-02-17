@@ -21,6 +21,7 @@ package de.florianreuth.secondchat.injection.mixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import de.florianreuth.secondchat.injection.access.IGui;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
@@ -42,7 +43,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinChatScreen extends Screen {
 
     @Unique
-    private boolean secondChat$mainChatFocused;
+    private int secondChat$focusedChatIndex = -1;
 
     protected MixinChatScreen(Component title) {
         super(title);
@@ -53,17 +54,17 @@ public abstract class MixinChatScreen extends Screen {
 
     @WrapOperation(method = {"keyPressed", "mouseScrolled"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;scrollChat(I)V"))
     private void scrollSecondChat(ChatComponent instance, int posInc, Operation<Void> original) {
-        if (secondChat$mainChatFocused) {
+        if (secondChat$focusedChatIndex == -1) {
             original.call(instance, posInc);
         } else {
-            secondChat$getChatHud().scrollChat(posInc);
+            secondChat$getChatHud(secondChat$focusedChatIndex).scrollChat(posInc);
         }
     }
 
     @WrapOperation(method = {"mouseClicked"}, at = @At(value = "NEW", target = "(Lnet/minecraft/client/gui/Font;II)Lnet/minecraft/client/gui/ActiveTextCollector$ClickableStyleFinder;"))
     private ActiveTextCollector.ClickableStyleFinder clickSecondChat(Font font, int mouseX, int mouseY, Operation<ActiveTextCollector.ClickableStyleFinder> original) {
-        if (secondChat$mainChatFocused) {
-            mouseX = secondChat$fixMouseX(mouseX);
+        if (secondChat$focusedChatIndex >= 0) {
+            mouseX = secondChat$fixMouseX(mouseX, secondChat$focusedChatIndex);
         }
 
         return original.call(font, mouseX, mouseY);
@@ -71,25 +72,45 @@ public abstract class MixinChatScreen extends Screen {
 
     @Inject(method = "render", at = @At("HEAD"))
     public void decideFocusedChat(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
-        secondChat$mainChatFocused = mouseX <= width / 2;
+        final List<ChatComponent> chatComponents = ((IGui) minecraft.gui).secondChat$getChatComponents();
+        
+        // Determine which chat is focused based on mouse position
+        secondChat$focusedChatIndex = -1;
+        int totalWidth = 0;
+        for (int i = 0; i < chatComponents.size(); i++) {
+            totalWidth += chatComponents.get(i).getWidth();
+            if (mouseX > width - totalWidth) {
+                secondChat$focusedChatIndex = i;
+                break;
+            }
+        }
 
         final Matrix3x2fStack pose = guiGraphics.pose();
-        pose.pushMatrix();
-        final ChatComponent secondChat = secondChat$getChatHud();
-        pose.translate(guiGraphics.guiWidth() - secondChat.getWidth(), 0);
-        secondChat.render(guiGraphics, font, minecraft.gui.getGuiTicks(), mouseX, mouseY, true, insertionClickMode());
-        pose.popMatrix();
+        
+        // Render all additional chat components
+        for (int i = 0; i < chatComponents.size(); i++) {
+            final ChatComponent chatComponent = chatComponents.get(i);
+            pose.pushMatrix();
+            pose.translate(guiGraphics.guiWidth() - chatComponent.getWidth() * (i + 1), 0);
+            chatComponent.render(guiGraphics, font, minecraft.gui.getGuiTicks(), mouseX, mouseY, true, insertionClickMode());
+            pose.popMatrix();
+        }
     }
 
     @Unique
-    private int secondChat$fixMouseX(final int mouseX) {
-        return mouseX - minecraft.getWindow().getGuiScaledWidth() + secondChat$getChatHud().getWidth();
+    private int secondChat$fixMouseX(final int mouseX, final int chatIndex) {
+        final ChatComponent chatComponent = secondChat$getChatHud(chatIndex);
+        return mouseX - minecraft.getWindow().getGuiScaledWidth() + chatComponent.getWidth() * (chatIndex + 1);
     }
 
     @Unique
-    private ChatComponent secondChat$getChatHud() {
+    private ChatComponent secondChat$getChatHud(int chatIndex) {
         final Gui gui = Minecraft.getInstance().gui;
-        return ((IGui) gui).secondChat$getChatComponent();
+        final List<ChatComponent> components = ((IGui) gui).secondChat$getChatComponents();
+        if (chatIndex >= 0 && chatIndex < components.size()) {
+            return components.get(chatIndex);
+        }
+        return components.get(0);
     }
 
 }
