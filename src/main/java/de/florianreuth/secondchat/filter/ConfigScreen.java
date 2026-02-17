@@ -45,7 +45,10 @@ public final class ConfigScreen extends Screen {
     private static final int CHAT_ID_INC_WIDTH = 15;
     private static final int ADD_BUTTON_WIDTH = 20;
     
-    // Total width: buttons (330) + spacing (3*PADDING + 2*CHAT_ID_BUTTON_SPACING)
+    // Total width calculation:
+    // Buttons: 150 + 100 + 15 + 30 + 15 + 20 = 330
+    // Spacing: PADDING between (editBox-filter), (filter-dec), (inc-add) = 3*PADDING
+    //          CHAT_ID_BUTTON_SPACING between (dec-chatId), (chatId-inc) = 2*CHAT_ID_BUTTON_SPACING
     private static final int TOTAL_CONTROL_WIDTH = TEXT_FIELD_WIDTH + FILTER_BUTTON_WIDTH + 
                                                      CHAT_ID_DEC_WIDTH + CHAT_ID_BUTTON_WIDTH + 
                                                      CHAT_ID_INC_WIDTH + ADD_BUTTON_WIDTH +

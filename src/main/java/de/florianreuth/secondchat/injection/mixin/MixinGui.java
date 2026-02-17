@@ -129,6 +129,10 @@ public abstract class MixinGui implements IGui {
         // Expand the list if necessary (synchronized to prevent concurrent modification)
         synchronized (secondChat$chatComponentsLock) {
             while (secondChat$chatComponents.size() <= index) {
+                // Ensure minecraft instance is available
+                if (secondChat$minecraft == null) {
+                    throw new IllegalStateException("Minecraft instance not initialized");
+                }
                 secondChat$chatComponents.add(new ChatComponent(secondChat$minecraft));
             }
             
