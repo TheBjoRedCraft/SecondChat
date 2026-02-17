@@ -66,12 +66,14 @@ public abstract class MixinGui implements IGui {
     private void renderSecondChat(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         final Matrix3x2fStack pose = guiGraphics.pose();
         
+        int cumulativeWidth = 0;
         for (int i = 0; i < secondChat$chatComponents.size(); i++) {
             secondChat$currentChatIndex = i;
             final ChatComponent chatComponent = secondChat$chatComponents.get(i);
+            cumulativeWidth += chatComponent.getWidth();
             
             pose.pushMatrix();
-            pose.translate(guiGraphics.guiWidth() - chatComponent.getWidth() * (i + 1), 0);
+            pose.translate(guiGraphics.guiWidth() - cumulativeWidth, 0);
             this.renderChat(guiGraphics, deltaTracker);
             pose.popMatrix();
         }

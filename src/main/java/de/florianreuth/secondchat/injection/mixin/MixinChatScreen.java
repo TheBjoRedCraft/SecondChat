@@ -75,11 +75,13 @@ public abstract class MixinChatScreen extends Screen {
         final List<ChatComponent> chatComponents = ((IGui) minecraft.gui).secondChat$getChatComponents();
         
         // Determine which chat is focused based on mouse position
+        // Chats are rendered right-to-left, with chat 0 being rightmost
         secondChat$focusedChatIndex = -1;
-        int totalWidth = 0;
+        int cumulativeWidth = 0;
         for (int i = 0; i < chatComponents.size(); i++) {
-            totalWidth += chatComponents.get(i).getWidth();
-            if (mouseX > width - totalWidth) {
+            cumulativeWidth += chatComponents.get(i).getWidth();
+            // Check if mouse is within this chat's horizontal bounds
+            if (mouseX > width - cumulativeWidth) {
                 secondChat$focusedChatIndex = i;
                 break;
             }
@@ -88,10 +90,13 @@ public abstract class MixinChatScreen extends Screen {
         final Matrix3x2fStack pose = guiGraphics.pose();
         
         // Render all additional chat components
+        cumulativeWidth = 0;
         for (int i = 0; i < chatComponents.size(); i++) {
             final ChatComponent chatComponent = chatComponents.get(i);
+            cumulativeWidth += chatComponent.getWidth();
+            
             pose.pushMatrix();
-            pose.translate(guiGraphics.guiWidth() - chatComponent.getWidth() * (i + 1), 0);
+            pose.translate(guiGraphics.guiWidth() - cumulativeWidth, 0);
             chatComponent.render(guiGraphics, font, minecraft.gui.getGuiTicks(), mouseX, mouseY, true, insertionClickMode());
             pose.popMatrix();
         }
@@ -99,8 +104,12 @@ public abstract class MixinChatScreen extends Screen {
 
     @Unique
     private int secondChat$fixMouseX(final int mouseX, final int chatIndex) {
-        final ChatComponent chatComponent = secondChat$getChatHud(chatIndex);
-        return mouseX - minecraft.getWindow().getGuiScaledWidth() + chatComponent.getWidth() * (chatIndex + 1);
+        final List<ChatComponent> components = ((IGui) Minecraft.getInstance().gui).secondChat$getChatComponents();
+        int cumulativeWidth = 0;
+        for (int i = 0; i <= chatIndex; i++) {
+            cumulativeWidth += components.get(i).getWidth();
+        }
+        return mouseX - minecraft.getWindow().getGuiScaledWidth() + cumulativeWidth;
     }
 
     @Unique
