@@ -35,9 +35,9 @@ import org.joml.Matrix3x2fStack;
 public final class ConfigScreen extends Screen {
     private static final int RED_TRANSPARENT = 0x80FF0000;
     private static final int PADDING = 3;
-    private static final int BUTTON_SPACING = 1;
+    private static final int BUTTON_SPACING = 2;
 
-    // Component widths sum to 350, with PADDING spaces between them
+    // Component widths: 150 + 100 + 15 + 30 + 15 + 20 = 330, plus spacing between
     private static final int TEXT_FIELD_WIDTH = 150;
     private static final int FILTER_BUTTON_WIDTH = 100;
     private static final int CHAT_ID_BUTTON_WIDTH = 30;

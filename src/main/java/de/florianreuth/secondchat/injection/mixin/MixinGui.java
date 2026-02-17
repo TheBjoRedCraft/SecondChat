@@ -109,7 +109,8 @@ public abstract class MixinGui implements IGui {
         }
         
         // Return a new list to avoid ConcurrentModificationException
-        return new ArrayList<>(secondChat$chatComponents.subList(0, Math.min(maxChatId, secondChat$chatComponents.size())));
+        // After the loop above, we're guaranteed to have at least maxChatId elements
+        return new ArrayList<>(secondChat$chatComponents.subList(0, maxChatId));
     }
 
     @Override
