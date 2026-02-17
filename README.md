@@ -20,6 +20,28 @@ to the specified chat. The mod supports unlimited chat windows - simply assign a
 - CONTAINS
 - REGEX
 
+## Chat Positioning
+
+Chats can be positioned anywhere on the screen using x/y coordinates. By default, chats are stacked from right to left.
+
+### Position Commands
+
+- `/chatpos set <chatId> <x> <y>` - Set the position of a chat window
+  - `x`: Horizontal position (negative values = from right edge)
+  - `y`: Vertical position from bottom
+- `/chatpos reset <chatId>` - Reset a chat to default position
+- `/chatpos list` - Show all chat positions
+
+### Examples
+
+```
+/chatpos set 1 10 10        # Position chat #1 at x=10, y=10 from bottom-left
+/chatpos set 2 -300 50      # Position chat #2 300 pixels from right edge, 50 up
+/chatpos reset 1            # Reset chat #1 to default stacked position
+```
+
+Positions are saved in `config/secondchat-positions.json` and persist across restarts.
+
 ## Downloads
 
 Modrinth - https://modrinth.com/mod/secondchat
