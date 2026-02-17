@@ -37,7 +37,7 @@ public final class ConfigScreen extends Screen {
     private static final int PADDING = 3;
     private static final int BUTTON_SPACING = 2;
 
-    // Component widths: 150 + 100 + 15 + 30 + 15 + 20 = 330, plus spacing between
+    // Total control width: buttons (330) + spacing (3*PADDING + 2*BUTTON_SPACING)
     private static final int TEXT_FIELD_WIDTH = 150;
     private static final int FILTER_BUTTON_WIDTH = 100;
     private static final int CHAT_ID_BUTTON_WIDTH = 30;
@@ -73,7 +73,10 @@ public final class ConfigScreen extends Screen {
         ));
 
         final int y = height - Button.DEFAULT_HEIGHT - PADDING - 1;
-        int x = width / 2 - TEXT_FIELD_WIDTH - PADDING - PADDING - PADDING - PADDING;
+        // Center the controls, accounting for text field, filter button, chat controls (with spacing), and add button
+        int x = width / 2 - (TEXT_FIELD_WIDTH + PADDING + FILTER_BUTTON_WIDTH + PADDING + 
+                             CHAT_ID_DEC_WIDTH + BUTTON_SPACING + CHAT_ID_BUTTON_WIDTH + 
+                             BUTTON_SPACING + CHAT_ID_INC_WIDTH + PADDING + ADD_BUTTON_WIDTH) / 2;
         editBox = addRenderableWidget(new EditBox(this.font, x, y, TEXT_FIELD_WIDTH, Button.DEFAULT_HEIGHT, Component.empty()));
 
         x += TEXT_FIELD_WIDTH + PADDING;
