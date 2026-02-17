@@ -35,15 +35,21 @@ import org.joml.Matrix3x2fStack;
 public final class ConfigScreen extends Screen {
     private static final int RED_TRANSPARENT = 0x80FF0000;
     private static final int PADDING = 3;
-    private static final int BUTTON_SPACING = 2;
+    private static final int CHAT_ID_BUTTON_SPACING = 2;
 
-    // Total control width: buttons (330) + spacing (3*PADDING + 2*BUTTON_SPACING)
+    // Button widths
     private static final int TEXT_FIELD_WIDTH = 150;
     private static final int FILTER_BUTTON_WIDTH = 100;
     private static final int CHAT_ID_BUTTON_WIDTH = 30;
     private static final int CHAT_ID_DEC_WIDTH = 15;
     private static final int CHAT_ID_INC_WIDTH = 15;
     private static final int ADD_BUTTON_WIDTH = 20;
+    
+    // Total width: buttons (330) + spacing (3*PADDING + 2*CHAT_ID_BUTTON_SPACING)
+    private static final int TOTAL_CONTROL_WIDTH = TEXT_FIELD_WIDTH + FILTER_BUTTON_WIDTH + 
+                                                     CHAT_ID_DEC_WIDTH + CHAT_ID_BUTTON_WIDTH + 
+                                                     CHAT_ID_INC_WIDTH + ADD_BUTTON_WIDTH +
+                                                     3 * PADDING + 2 * CHAT_ID_BUTTON_SPACING;
 
     private final Screen parent;
 
@@ -73,10 +79,8 @@ public final class ConfigScreen extends Screen {
         ));
 
         final int y = height - Button.DEFAULT_HEIGHT - PADDING - 1;
-        // Center the controls, accounting for text field, filter button, chat controls (with spacing), and add button
-        int x = width / 2 - (TEXT_FIELD_WIDTH + PADDING + FILTER_BUTTON_WIDTH + PADDING + 
-                             CHAT_ID_DEC_WIDTH + BUTTON_SPACING + CHAT_ID_BUTTON_WIDTH + 
-                             BUTTON_SPACING + CHAT_ID_INC_WIDTH + PADDING + ADD_BUTTON_WIDTH) / 2;
+        // Center all controls horizontally
+        int x = width / 2 - TOTAL_CONTROL_WIDTH / 2;
         editBox = addRenderableWidget(new EditBox(this.font, x, y, TEXT_FIELD_WIDTH, Button.DEFAULT_HEIGHT, Component.empty()));
 
         x += TEXT_FIELD_WIDTH + PADDING;
@@ -102,7 +106,7 @@ public final class ConfigScreen extends Screen {
             .size(CHAT_ID_DEC_WIDTH, Button.DEFAULT_HEIGHT)
             .build());
         
-        x += CHAT_ID_DEC_WIDTH + BUTTON_SPACING;
+        x += CHAT_ID_DEC_WIDTH + CHAT_ID_BUTTON_SPACING;
         chatIdButton = addRenderableWidget(Button
             .builder(getChatIdText(chatId), button -> {
                 // Click to cycle through common values
@@ -117,7 +121,7 @@ public final class ConfigScreen extends Screen {
             .size(CHAT_ID_BUTTON_WIDTH, Button.DEFAULT_HEIGHT)
             .build());
         
-        x += CHAT_ID_BUTTON_WIDTH + BUTTON_SPACING;
+        x += CHAT_ID_BUTTON_WIDTH + CHAT_ID_BUTTON_SPACING;
         // Increment button
         addRenderableWidget(Button
             .builder(Component.literal("+"), button -> {

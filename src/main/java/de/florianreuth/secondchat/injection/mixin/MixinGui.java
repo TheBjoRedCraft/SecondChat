@@ -53,6 +53,9 @@ public abstract class MixinGui implements IGui {
     @Unique
     private Minecraft secondChat$minecraft;
 
+    @Unique
+    private final Object secondChat$chatComponentsLock = new Object();
+
     @Shadow
     protected abstract void renderChat(final GuiGraphics guiGraphics, final DeltaTracker deltaTracker);
 
@@ -123,12 +126,14 @@ public abstract class MixinGui implements IGui {
         
         int index = chatId - 1;
         
-        // Expand the list if necessary
-        while (secondChat$chatComponents.size() <= index) {
-            secondChat$chatComponents.add(new ChatComponent(secondChat$minecraft));
+        // Expand the list if necessary (synchronized to prevent concurrent modification)
+        synchronized (secondChat$chatComponentsLock) {
+            while (secondChat$chatComponents.size() <= index) {
+                secondChat$chatComponents.add(new ChatComponent(secondChat$minecraft));
+            }
+            
+            return secondChat$chatComponents.get(index);
         }
-        
-        return secondChat$chatComponents.get(index);
     }
 
 }
